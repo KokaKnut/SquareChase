@@ -25,7 +25,7 @@ namespace SquareChase
         int playerScore = 0;
         float timeRemaining = 0.0f;
         const float TIME_PER_SQUARE = 0.75f;
-        Color[] color = new Color[3] { Color.Red, Color.Green, Color.Blue };
+        Color[] colors = new Color[3] { Color.Red, Color.Green, Color.Blue };
 
         public Game1()
         {
@@ -56,6 +56,7 @@ namespace SquareChase
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            squareTexture = Content.Load<Texture2D>(@"Square");
         }
 
         /// <summary>
@@ -78,8 +79,25 @@ namespace SquareChase
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            // TODO: Add your update logic here
+            if (timeRemaining == 0.0f)
+            {
+                currentSquare = new Rectangle(
+                    rand.Next(0, this.Window.ClientBounds.Width - 32),
+                    rand.Next(0, this.Window.ClientBounds.Height - 32),
+                    32, 32
+                    );
+                timeRemaining = TIME_PER_SQUARE;
+            }
 
+            MouseState mouse = Mouse.GetState();
+            if (mouse.LeftButton == ButtonState.Pressed && currentSquare.Contains(mouse.X, mouse.Y))
+            {
+                playerScore++;
+                timeRemaining = 0;
+            }
+
+            timeRemaining = MathHelper.Max(0, timeRemaining - (float)gameTime.ElapsedGameTime.TotalSeconds);
+            this.Window.Title = "Score: " + playerScore;
             base.Update(gameTime);
         }
 
@@ -89,7 +107,11 @@ namespace SquareChase
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.DarkGoldenrod);
+            GraphicsDevice.Clear(Color.Firebrick);
+
+            spriteBatch.Begin();
+            spriteBatch.Draw(squareTexture, currentSquare, colors[playerScore % 3]);
+            spriteBatch.End();
 
             // TODO: Add your drawing code here
 
